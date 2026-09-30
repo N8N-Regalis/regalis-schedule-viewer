@@ -14,6 +14,21 @@ npm run preview  # serve the production build
 
 Optionally copy `.env.example` to `.env` to point at a different Supabase project.
 
+## Google sign-in (@regaliscapital.com only)
+
+Sign-in uses Supabase Auth with the Google provider.
+
+1. Google Cloud Console: create an OAuth client (Web application). Add the authorized redirect URI
+   `https://pzcfrocmwmhyygzgecpl.supabase.co/auth/v1/callback`. If the OAuth consent screen can be set to
+   "Internal" (Regalis Google Workspace), do that: Google then rejects other domains itself.
+2. Supabase Dashboard > Authentication > Providers > Google: enable it, paste the client ID and secret.
+3. Supabase Dashboard > Authentication > URL Configuration: add the site URL and the app URLs
+   (GitHub Pages URL and `http://localhost:5173`) to the redirect allow list.
+4. Apply `supabase-auth-setup.sql` (after reading its warning). Without it, the domain check only
+   hides the UI; anyone with the public anon key could still query the tables directly.
+
+The domain is set in `src/lib/auth.js` (`ALLOWED_DOMAIN`).
+
 ## Layout
 
 ```

@@ -1,6 +1,6 @@
 import logo from '../assets/logo.png';
 
-export default function Header({ status, lastLoaded, loading, onRefresh }) {
+export default function Header({ status, lastLoaded, loading, onRefresh, userEmail, onSignOut }) {
   return (
     <header>
       <div className="brand-container">
@@ -15,9 +15,11 @@ export default function Header({ status, lastLoaded, loading, onRefresh }) {
       <div className="header-actions">
         <div className="status">
           <strong>{status}</strong>
+          <span title={userEmail}>{userEmail}</span>
           <span>{lastLoaded || ' '}</span>
         </div>
         <button type="button" onClick={onRefresh} disabled={loading}>Refresh data</button>
+        <button type="button" onClick={onSignOut}>Sign out</button>
       </div>
     </header>
   );

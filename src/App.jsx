@@ -8,9 +8,20 @@ import DetailCard from './components/DetailCard.jsx';
 import Roster from './components/Roster.jsx';
 import { useClients } from './hooks/useClients.js';
 import { useStarred } from './hooks/useStarred.js';
+import LoginScreen from './components/LoginScreen.jsx';
+import { useAuth } from './hooks/useAuth.js';
+import { signOut } from './lib/auth.js';
 import { matchesSearch } from './lib/clients.js';
 
+// Only signed-in @regaliscapital.com users get the viewer; data is not fetched before that.
 export default function App() {
+  const { loading, user, rejected } = useAuth();
+  if (loading) return null;
+  if (!user) return <LoginScreen rejected={rejected} />;
+  return <Viewer user={user} />;
+}
+
+function Viewer({ user }) {
   const { clients, loading, error, lastLoaded, reload } = useClients();
   const { starred, toggleStar } = useStarred();
   const [selectedKey, setSelectedKey] = useState('');
@@ -63,7 +74,14 @@ export default function App() {
 
   return (
     <main>
-      <Header status={status} lastLoaded={lastLoaded} loading={loading} onRefresh={reload} />
+      <Header
+        status={status}
+        lastLoaded={lastLoaded}
+        loading={loading}
+        onRefresh={reload}
+        userEmail={user.email}
+        onSignOut={signOut}
+      />
 
       {/* Client picker */}
       <section className="card picker" aria-label="Find a client">
