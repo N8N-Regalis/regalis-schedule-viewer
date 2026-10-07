@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { formatHours, groupByDate, tzLabel } from '../lib/time.js';
+import InternalNotes from './InternalNotes.jsx';
 
 export default function DetailCard({ client }) {
   return (
@@ -42,6 +43,7 @@ function Details({ client }) {
         <h3>Special instructions</h3>
         <div className={'notes' + (notes ? '' : ' empty')}>{notes || 'No special instructions.'}</div>
       </div>
+      <InternalNotes key={client.key} email={client.email} />
     </div>
   );
 }

@@ -29,6 +29,17 @@ Sign-in uses Supabase Auth with the Google provider.
 
 The domain is set in `src/lib/auth.js` (`ALLOWED_DOMAIN`).
 
+## Internal notes and history
+
+The details card has a staff-only "Internal notes" box under Special instructions, plus an edit history
+(who changed it, when, and the before/after text). Run `supabase-internal-notes-setup.sql` in the Supabase
+SQL Editor first; until then the box shows a load error and the rest of the app works as before.
+
+- Notes live in `client_internal_notes` and the log in `internal_notes_history`, not in `schedules`, so the
+  client portal can never read them.
+- Both tables are read-only to `@regaliscapital.com` staff; all writes go through `save_internal_notes()`,
+  which takes the editor's email from their login token and refuses a save if someone else edited first.
+
 ## Layout
 
 ```
@@ -38,9 +49,10 @@ src/
   hooks/useStarred.js      per-browser starred clients (localStorage)
   lib/supabase.js          Supabase client
   lib/clients.js           fetch/merge clients, search ranking helpers
+  lib/internalNotes.js     internal notes + history queries, save via RPC
   lib/time.js              slot parsing and timezone conversion (display tz = EST)
   components/
     Header.jsx  SearchBox.jsx  ClientCombo.jsx
-    ScheduleCard.jsx  DetailCard.jsx  Roster.jsx  Icons.jsx
+    ScheduleCard.jsx  DetailCard.jsx  InternalNotes.jsx  Roster.jsx  Icons.jsx
   styles.css               unchanged from the original single-file page
 ```
