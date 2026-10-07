@@ -279,6 +279,28 @@ table.roster { width: 100%; border-collapse: collapse; font-size: 13px; table-la
 .history-text.after { background: rgba(74, 222, 128, 0.08); border-left: 3px solid #4ade80; }
 .history-text.after small { color: #4ade80; }
 
+/* Staff schedule editor + special instructions header */
+.block-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.block-head h3 { margin: 0; }
+.block-head button { padding: 3px 10px; font-size: 11px; }
+.saved-note { margin-bottom: 12px; font-size: 12.5px; color: #4ade80; }
+.editor-note { margin: 0 0 12px; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+.editor-add { display: grid; grid-template-columns: 1.4fr 1fr 1fr auto; gap: 12px; align-items: end; margin-bottom: 12px; }
+.editor-add button { padding: 9px 14px; }
+.editor .day-scroll { margin-bottom: 4px; }
+.chip.editable { display: inline-flex; align-items: center; gap: 6px; padding-right: 4px; }
+.chip-x { padding: 0 6px; font-size: 14px; line-height: 20px; border-radius: 4px; background: transparent; border-color: transparent; color: #f3dfb0; }
+.chip-x:hover { background: rgba(248, 113, 113, 0.2); color: #fff; }
+.day-tools { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.day-tools button { padding: 3px 8px; font-size: 11px; }
+.history { margin-top: 12px; }
+.history .history-toggle { margin-top: 0; }
+.history .history-text div + div { margin-top: 2px; }
+@media (max-width: 700px) {
+  .editor-add { grid-template-columns: 1fr 1fr; }
+  .editor-add .field:first-child { grid-column: 1 / -1; }
+}
+
 .hidden { display: none !important; }
 [hidden] { display: none !important; }
 

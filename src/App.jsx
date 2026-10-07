@@ -52,6 +52,9 @@ function Viewer({ user }) {
     : error ? 'Load failed'
     : `${clients.length} clients, ${withSchedule} with schedules`;
 
+  // After a staff edit: pull the saved data back without flashing the whole page into "loading"
+  const refreshQuietly = () => reload({ silent: true });
+
   const handleSearchChange = (value) => {
     setSearch(value);
     // Typing a search that leaves exactly one client picks that client
@@ -111,11 +114,11 @@ function Viewer({ user }) {
 
       <div className="app-layout">
         {/* Left: availability list */}
-        <ScheduleCard client={selected} error={error} />
+        <ScheduleCard client={selected} error={error} onSaved={refreshQuietly} />
 
         {/* Right: client details, then the roster */}
         <div className="side-col">
-          <DetailCard client={selected} />
+          <DetailCard client={selected} onSaved={refreshQuietly} />
           <Roster
             clients={clients}
             term={term}

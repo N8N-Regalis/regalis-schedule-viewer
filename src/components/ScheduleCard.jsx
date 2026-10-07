@@ -1,4 +1,6 @@
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import ScheduleEditor from './ScheduleEditor.jsx';
+import ScheduleHistory from './ScheduleHistory.jsx';
 import {
   DISPLAY_TZ_LABEL,
   formatHours,
@@ -9,7 +11,7 @@ import {
 } from '../lib/time.js';
 
 // Left-hand card: empty state, load error, or the selected client's availability list.
-export default function ScheduleCard({ client, error }) {
+export default function ScheduleCard({ client, error, onSaved }) {
   return (
     <section className="card" aria-live="polite">
       {error ? (
@@ -18,7 +20,7 @@ export default function ScheduleCard({ client, error }) {
           <p>{error}</p>
         </div>
       ) : client ? (
-        <ScheduleView client={client} />
+        <ScheduleView key={client.key} client={client} onSaved={onSaved} />
       ) : (
         <div className="state">
           <h2>No client selected</h2>
@@ -29,7 +31,9 @@ export default function ScheduleCard({ client, error }) {
   );
 }
 
-function ScheduleView({ client }) {
+function ScheduleView({ client, onSaved }) {
+  const [editing, setEditing] = useState(false);
+  const [notice, setNotice] = useState('');
   const scrollRef = useRef(null);
   const firstUpcomingRef = useRef(null);
 
@@ -47,12 +51,22 @@ function ScheduleView({ client }) {
     if (li && scrollRef.current) scrollRef.current.scrollTop = Math.max(0, li.offsetTop - 8);
   };
 
-  // A different client starts at the top of their list (or at today if past dates come first);
-  // data refreshes for the same client keep their place.
+  // A different client (or leaving the editor) starts at the top of the list, or at today if past dates
+  // come first; data refreshes for the same client keep their place.
   useLayoutEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
     if (pastCount && firstUpcomingKey) scrollToUpcoming();
-  }, [client.key]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [client.key, editing]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const startEdit = () => {
+    setNotice('');
+    setEditing(true);
+  };
+  const finishEdit = async () => {
+    await onSaved();
+    setEditing(false);
+    setNotice('Schedule saved.');
+  };
 
   return (
     <div>
@@ -76,13 +90,25 @@ function ScheduleView({ client }) {
             )}
           </span>
           {/* Offer the shortcut only when past dates would otherwise sit at the top */}
-          <button type="button" id="jumpToday" hidden={!(pastCount && firstUpcomingKey)} onClick={scrollToUpcoming}>
+          <button type="button" id="jumpToday" hidden={editing || !(pastCount && firstUpcomingKey)} onClick={scrollToUpcoming}>
             Jump to today
           </button>
+          <button type="button" onClick={startEdit} hidden={editing}>Edit schedule</button>
         </div>
       </div>
 
-      {!none && (
+      {notice && !editing && <div className="saved-note" role="status">{notice}</div>}
+
+      {editing && (
+        <ScheduleEditor
+          client={client}
+          onCancel={() => setEditing(false)}
+          onSaved={finishEdit}
+          onStale={onSaved}
+        />
+      )}
+
+      {!editing && !none && (
         <div className="day-scroll" ref={scrollRef} tabIndex={0} role="region" aria-label="Available dates, scrollable">
           <ul className="day-list">
             {days.map((day) => (
@@ -97,7 +123,7 @@ function ScheduleView({ client }) {
         </div>
       )}
 
-      {none && (
+      {!editing && none && (
         <div className="state">
           <h2>No times selected</h2>
           <p>
@@ -107,6 +133,8 @@ function ScheduleView({ client }) {
           </p>
         </div>
       )}
+
+      <ScheduleHistory email={client.email} field="slots" refreshKey={sched ? sched.updated_at : ''} />
     </div>
   );
 }

@@ -29,6 +29,22 @@ Sign-in uses Supabase Auth with the Google provider.
 
 The domain is set in `src/lib/auth.js` (`ALLOWED_DOMAIN`).
 
+## Staff edits and history
+
+Signed-in staff can edit a client's available times ("Edit schedule"), their special instructions, and
+the staff-only internal notes. Every edit is logged with the editor's email, the time, and the before/after
+values, and the log is shown under each section.
+
+Apply these in the Supabase SQL Editor (review first; both are safe to re-run):
+
+- `supabase-internal-notes-setup.sql` - internal notes + their history
+- `supabase-schedule-edit-setup.sql` - schedule / special-instruction edits + history (`schedule_history`)
+
+Staff never write to `schedules` directly: the app calls `save_client_slots()` / `save_client_notes()`,
+which check the caller is a verified @regaliscapital.com user, take the editor's email from the login
+token, and write the change and its history row in one transaction. A save is refused if the value
+changed since it was loaded (for example, the client re-saved in the portal while staff were editing).
+
 ## Internal notes and history
 
 The details card has a staff-only "Internal notes" box under Special instructions, plus an edit history

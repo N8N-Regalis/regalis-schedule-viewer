@@ -168,10 +168,10 @@ export function todayInDisplayTz() {
   return `${s.getUTCFullYear()}-${pad(s.getUTCMonth() + 1)}-${pad(s.getUTCDate())}`;
 }
 
-// Group a schedule's slots by date, converted from the client's timezone into the display timezone.
-// Returns [{ dateKey, mins: [minutes since midnight, ascending] }] sorted by date.
-export function groupByDate(schedule) {
-  const days = new Map();
+// Every parseable slot as { id, dateKey, mins }, converted from the client's timezone into the
+// display timezone. Ids that can't be parsed are left out.
+export function displaySlots(schedule) {
+  const out = [];
   const fromTz = schedule && schedule.timezone ? schedule.timezone : '';
   slotKeys(schedule).forEach((id) => {
     const cut = id.indexOf('_');
@@ -187,6 +187,36 @@ export function groupByDate(schedule) {
         mins = conv.mins;
       }
     }
+    out.push({ id, dateKey, mins });
+  });
+  return out;
+}
+
+// Inverse of the conversion above: a slot id ("YYYY-MM-DD_h:mm AM") in the client's timezone for a
+// date/time shown in the display timezone. Like displaySlots, it leaves the time as-is when the
+// client has no usable timezone.
+export function slotIdFromDisplay(dateKey, mins, toTz) {
+  let dk = dateKey;
+  let m = mins;
+  if (toTz) {
+    const [y, mo, d] = dateKey.split('-').map(Number);
+    const wallAsUtc = Date.UTC(y, mo - 1, d, 0, mins);
+    const utc = wallAsUtc - zoneOffsetMinutes(DISPLAY_TZ, wallAsUtc) * 60000;
+    const off = zoneOffsetMinutes(toTz, utc);
+    if (off !== null) {
+      const s = new Date(utc + off * 60000);
+      dk = `${s.getUTCFullYear()}-${pad(s.getUTCMonth() + 1)}-${pad(s.getUTCDate())}`;
+      m = s.getUTCHours() * 60 + s.getUTCMinutes();
+    }
+  }
+  return `${dk}_${minutesToTime(m)}`;
+}
+
+// Group a schedule's slots by date, converted from the client's timezone into the display timezone.
+// Returns [{ dateKey, mins: [minutes since midnight, ascending] }] sorted by date.
+export function groupByDate(schedule) {
+  const days = new Map();
+  displaySlots(schedule).forEach(({ dateKey, mins }) => {
     if (!days.has(dateKey)) days.set(dateKey, []);
     days.get(dateKey).push(mins);
   });

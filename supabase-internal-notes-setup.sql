@@ -124,3 +124,6 @@ $$;
 
 revoke all on function public.save_internal_notes(text, text, timestamptz) from public, anon;
 grant execute on function public.save_internal_notes(text, text, timestamptz) to authenticated;
+
+-- Make the API pick up the new tables/functions right away (otherwise: "table not found in the schema cache")
+notify pgrst, 'reload schema';

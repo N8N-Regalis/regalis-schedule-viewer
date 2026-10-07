@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
 import { formatHours, groupByDate, tzLabel } from '../lib/time.js';
 import InternalNotes from './InternalNotes.jsx';
+import SpecialInstructions from './SpecialInstructions.jsx';
 
-export default function DetailCard({ client }) {
+export default function DetailCard({ client, onSaved }) {
   return (
     <aside className="card">
-      {client ? <Details client={client} /> : (
+      {client ? <Details client={client} onSaved={onSaved} /> : (
         <div>
           <h2>Client details</h2>
           <p>Contact info, totals and special instructions appear here.</p>
@@ -15,12 +16,11 @@ export default function DetailCard({ client }) {
   );
 }
 
-function Details({ client }) {
+function Details({ client, onSaved }) {
   const sched = client.schedule;
   const days = useMemo(() => groupByDate(sched), [sched]);
   const slotCount = days.reduce((n, d) => n + d.mins.length, 0);
   const tz = sched && sched.timezone ? sched.timezone : '';
-  const notes = sched && sched.notes ? sched.notes.trim() : '';
 
   const updated = sched && sched.updated_at
     ? new Date(sched.updated_at).toLocaleString('en-US', {
@@ -39,10 +39,7 @@ function Details({ client }) {
         <dt>Total hours</dt><dd>{slotCount ? formatHours(slotCount) : '0'}</dd>
         <dt>Last saved</dt><dd>{updated}</dd>
       </dl>
-      <div className="notes-block">
-        <h3>Special instructions</h3>
-        <div className={'notes' + (notes ? '' : ' empty')}>{notes || 'No special instructions.'}</div>
-      </div>
+      <SpecialInstructions key={'si-' + client.key} client={client} onSaved={onSaved} />
       <InternalNotes key={client.key} email={client.email} />
     </div>
   );

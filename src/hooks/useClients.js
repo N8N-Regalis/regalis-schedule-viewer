@@ -2,14 +2,16 @@ import { useCallback, useEffect, useState } from 'react';
 import { fetchClients } from '../lib/clients.js';
 
 // Loads the merged client list once on mount and again whenever `reload` is called.
+// `reload({ silent: true })` refreshes the data without switching the page into its loading state.
 export function useClients() {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [lastLoaded, setLastLoaded] = useState('');
 
-  const reload = useCallback(async () => {
-    setLoading(true);
+  const reload = useCallback(async (options) => {
+    const silent = options && options.silent === true; // not just truthy: onClick passes an event
+    if (!silent) setLoading(true);
     try {
       const list = await fetchClients();
       setClients(list);
